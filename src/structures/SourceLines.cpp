@@ -75,24 +75,51 @@ void SourceLines::loadFile(const SourceFiles::FileName & name)
 void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & name)
 {
     LineCollection & lines = sources_[name];
+    std::vector<int>    filterState;
+    filterState.push_back(true);
 
     std::string line;
     Tokens::FileContent fullSource;
     while (getline(file, line))
     {
-        lines.push_back(line);
-        fullSource += line;
+        if (line.compare(0, 19, "#pragma vera-pushon") == 0)
+        {
+            filterState.push_back(1);
+        }
+        if (line.compare(0, 20, "#pragma vera-pushoff") == 0)
+        {
+            filterState.push_back(0);
+        }
+        if (line.compare(0, 20, "#pragma vera-pop") == 0)
+        {
+            if (filterState.empty())
+            {
+                throw std::runtime_error(
+                    "Unbalanced vera-pop pragma: ie too many pop pragmas");
+            }
+            filterState.pop_back();
+        }
+        if (filterState.back())
+        {
+            lines.push_back(line);
+            fullSource += line;
 
-        // built-in rule
-        if (file.eof())
-        {
-            // Plugins::Reports::internal(name, static_cast<int>(lines.size()),
-            //     "no newline at end of file");
+            // built-in rule
+            if (file.eof())
+            {
+                // Plugins::Reports::internal(name, static_cast<int>(lines.size()),
+                //     "no newline at end of file");
+            }
+            else
+            {
+                fullSource += '\n';
+            }
         }
-        else
-        {
-            fullSource += '\n';
-        }
+    }
+    if (filterState.size() != 1)
+    {
+        throw std::runtime_error(
+            "Unbalanced vera-push pragma: ie too many push pragmas");
     }
 
     Tokens::parse(name, fullSource);
