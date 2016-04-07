@@ -102,8 +102,9 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
         if (not filterState.back())
         {
             // If pragmas have turned off vera
-            // Then just get the next line.
-            continue;
+            // Then make the line empty. This will just generate the end of line token
+            // Thus allowing us to count lines but nothing else.
+            line = "";
         }
         lines.push_back(line);
         fullSource += line;
