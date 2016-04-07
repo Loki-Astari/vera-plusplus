@@ -58,7 +58,11 @@ public:
 
     typedef std::vector<TokenFilter> FilterSequence;
 
-    static void parse(const SourceFiles::FileName & name, const FileContent & src);
+    static void parse(const SourceFiles::FileName & name,
+                      const FileContent & src,
+                      bool lastLineHasNewLine,
+                      int  maxLines
+                     );
 
     static TokenSequence getTokens(const SourceFiles::FileName & name,
         int fromLine, int fromColumn, int toLine, int toColumn,

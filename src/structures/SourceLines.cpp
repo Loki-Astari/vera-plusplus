@@ -78,24 +78,17 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
 
     std::string line;
     Tokens::FileContent fullSource;
+    bool   lastLineHasNewLine = true;
+
     while (getline(file, line))
     {
         lines.push_back(line);
         fullSource += line;
-
-        // built-in rule
-        if (file.eof())
-        {
-            // Plugins::Reports::internal(name, static_cast<int>(lines.size()),
-            //     "no newline at end of file");
-        }
-        else
-        {
-            fullSource += '\n';
-        }
+        fullSource += '\n';
+        lastLineHasNewLine  = !file.eof();
     }
 
-    Tokens::parse(name, fullSource);
+    Tokens::parse(name, fullSource, lastLineHasNewLine, lines.size());
 }
 
 int SourceLines::getLineCount(const SourceFiles::FileName & name)
