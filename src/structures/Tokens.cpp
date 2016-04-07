@@ -358,7 +358,11 @@ namespace Vera
 namespace Structures
 {
 
-void Tokens::parse(const SourceFiles::FileName & name, const FileContent & src)
+void Tokens::parse(const SourceFiles::FileName & name,
+                   const FileContent & src,
+                   bool lastLineHasNewLine,
+                   int  maxLines
+                  )
 {
     TokenCollection & tokensInFile = fileTokens_[name];
 
@@ -384,10 +388,11 @@ void Tokens::parse(const SourceFiles::FileName & name, const FileContent & src)
                 const boost::wave::token_id id(*it);
 
                 const token_type::position_type pos = it->get_position();
-                const std::string value = it->get_value().c_str();
+                std::string value = it->get_value().c_str();
                 const int line = pos.get_line();
                 const int column = pos.get_column() - 1;
-                const int length = static_cast<int>(value.size());
+                int length = static_cast<int>(value.size());
+                const bool thisIsLastLine = line == maxLines;
 
                 bool useReference = true;
                 if (id == boost::wave::T_NEWLINE || id == boost::wave::T_EOF || line > lineCount)
@@ -404,6 +409,38 @@ void Tokens::parse(const SourceFiles::FileName & name, const FileContent & src)
                     }
                 }
 
+                /*
+                 * If we have artificially added the newline token in SourceLines::loadFile()
+                 * This is were remove that new line character.
+                 */
+                if (not lastLineHasNewLine && thisIsLastLine && id == boost::wave::T_NEWLINE)
+                {
+                    continue;
+                }
+
+                /*
+                 * boost::wave adds the '\n' character to a one line comment.
+                 * But if there is a one line comment on the last line of a file and this
+                 * does not have a new-line character this cause boost wave to crash.
+                 * As a result we force a new-line character on all lines so that boost
+                 * wave does not crash.
+                 *
+                 * To compensate for this and allow for detect the missing new-line at the
+                 * end of file we need to see the new line after a comment. Thus I am splitting
+                 * the single line comment tag into two separate tokens.
+                 *
+                 * The token for the comment (with the new line removed)
+                 * The token for the new-line (unless this is the last line and
+                 *                             we artificially added the new line
+                 *                             SourceLines::loadFile().)
+                 */
+                if (id == boost::wave::T_CPPCOMMENT)
+                {
+                    // Remove the new line from the comment.
+                    length--;
+                    value = value.substr(0, value.size() - 1);
+                }
+
                 if (useReference)
                 {
                     // the reference representation of the token is stored
@@ -416,6 +453,16 @@ void Tokens::parse(const SourceFiles::FileName & name, const FileContent & src)
                     // so the real token value is stored in physicalTokens
 
                     tokensInFile.push_back(TokenRef(id, line, column, length, value));
+                }
+                /*
+                 * This is were we add the new-line token after a single line comment.
+                 */
+                if (id == boost::wave::T_CPPCOMMENT && (not thisIsLastLine || lastLineHasNewLine))
+                {
+                    tokensInFile.push_back(TokenRef(boost::wave::T_NEWLINE,
+                                                    line, column + value.size(),
+                                                    1, "\n")
+                                                   );
                 }
             }
         }

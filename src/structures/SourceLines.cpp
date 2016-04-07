@@ -80,6 +80,8 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
 
     std::string line;
     Tokens::FileContent fullSource;
+    bool   lastLineHasNewLine = true;
+
     while (getline(file, line))
     {
         if (line.compare(0, 19, "#pragma vera-pushon") == 0)
@@ -108,17 +110,8 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
         }
         lines.push_back(line);
         fullSource += line;
-
-        // built-in rule
-        if (file.eof())
-        {
-            // Plugins::Reports::internal(name, static_cast<int>(lines.size()),
-            //     "no newline at end of file");
-        }
-        else
-        {
-            fullSource += '\n';
-        }
+        fullSource += '\n';
+        lastLineHasNewLine  = !file.eof();
     }
     if (filterState.size() != 1)
     {
@@ -126,7 +119,7 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
             "Unbalanced vera-push pragma: ie too many push pragmas");
     }
 
-    Tokens::parse(name, fullSource);
+    Tokens::parse(name, fullSource, lastLineHasNewLine, lines.size());
 }
 
 int SourceLines::getLineCount(const SourceFiles::FileName & name)
