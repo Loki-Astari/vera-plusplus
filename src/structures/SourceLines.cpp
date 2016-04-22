@@ -84,6 +84,14 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
     {
         lines.push_back(line);
         fullSource += line;
+        /* Always add the '\n' back to the line.
+         * This is required to compensate for a bug in boost::wave.
+         * We remember if the last line needs the '\n' in the variable
+         * lastLineHasNewLine and it will be stripped in Tokens::parse()
+         * after we have tokenized the lines (thus this will not change)
+         * the output of vera token list (just move where we handle
+         * the final '\n' of the file).
+         */
         fullSource += '\n';
         lastLineHasNewLine  = !file.eof();
     }
