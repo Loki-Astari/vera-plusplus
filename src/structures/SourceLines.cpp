@@ -110,8 +110,37 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
         }
         lines.push_back(line);
         fullSource += line;
+
+        // built-in rule
+        if (file.eof())
+        {
+            filterState.push_back(0);
+        }
+        if (line.compare(0, 20, "#pragma vera-pop") == 0)
+        {
+            if (filterState.empty())
+            {
+                throw std::runtime_error(
+                    "Unbalanced vera-pop pragma: ie too many pop pragmas");
+            }
+            filterState.pop_back();
+        }
+        if (not filterState.back())
+        {
+            // If pragmas have turned off vera
+            // Then make the line empty. This will just generate the end of line token
+            // Thus allowing us to count lines but nothing else.
+            line = "";
+        }
+        lines.push_back(line);
+        fullSource += line;
         fullSource += '\n';
         lastLineHasNewLine  = !file.eof();
+    }
+    if (filterState.size() != 1)
+    {
+        throw std::runtime_error(
+            "Unbalanced vera-push pragma: ie too many push pragmas");
     }
     if (filterState.size() != 1)
     {
