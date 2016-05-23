@@ -84,15 +84,15 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
 
     while (getline(file, line))
     {
-        if (line.compare(0, 19, "#pragma vera-pushon") == 0)
+        if (line.compare(0, 19, "#pragma vera_pushon") == 0)
         {
             filterState.push_back(1);
         }
-        if (line.compare(0, 20, "#pragma vera-pushoff") == 0)
+        if (line.compare(0, 20, "#pragma vera_pushoff") == 0)
         {
             filterState.push_back(0);
         }
-        if (line.compare(0, 20, "#pragma vera-pop") == 0)
+        if (line.compare(0, 20, "#pragma vera_pop") == 0)
         {
             if (filterState.empty())
             {
@@ -106,56 +106,17 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
             // If pragmas have turned off vera
             // Then make the line empty. This will just generate the end of line token
             // Thus allowing us to count lines but nothing else.
-            line = "";
-        }
-        lines.push_back(line);
-        fullSource += line;
-
-        // built-in rule
-        if (file.eof())
-        {
-            filterState.push_back(0);
-        }
-        if (line.compare(0, 20, "#pragma vera-pop") == 0)
-        {
-            if (filterState.empty())
-            {
-                throw std::runtime_error(
-                    "Unbalanced vera-pop pragma: ie too many pop pragmas");
-            }
-            filterState.pop_back();
-        }
-        if (not filterState.back())
-        {
-            // If pragmas have turned off vera
-            // Then make the line empty. This will just generate the end of line token
-            // Thus allowing us to count lines but nothing else.
-            line = "";
+            line = "// Redacted Line"; // This is to prevent the empty line rule firing
         }
         lines.push_back(line);
         fullSource += line;
         fullSource += '\n';
-        lastLineHasNewLine  = !file.eof();
+        lastLineHasNewLine  = not file.eof();
     }
     if (filterState.size() != 1)
     {
         throw std::runtime_error(
             "Unbalanced vera-push pragma: ie too many push pragmas");
-    }
-    if (filterState.size() != 1)
-    {
-        throw std::runtime_error(
-            "Unbalanced vera-push pragma: ie too many push pragmas");
-        /* Always add the '\n' back to the line.
-         * This is required to compensate for a bug in boost::wave.
-         * We remember if the last line needs the '\n' in the variable
-         * lastLineHasNewLine and it will be stripped in Tokens::parse()
-         * after we have tokenized the lines (thus this will not change)
-         * the output of vera token list (just move where we handle
-         * the final '\n' of the file).
-         */
-        fullSource += '\n';
-        lastLineHasNewLine  = !file.eof();
     }
 
     Tokens::parse(name, fullSource, lastLineHasNewLine, lines.size());
