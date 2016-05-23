@@ -64,6 +64,7 @@
 #    ##############
 
 set builtInTypes {
+    void
     bool
     signed
     unsigned
@@ -164,6 +165,10 @@ foreach f [getSourceFileNames] {
                     # Continue to next token
                 } elseif {$nextTokenName == "colon_colon"} {
                     # Fully qualified identifier so ignore
+                    set ignore 1
+                    break
+                } elseif {$nextTokenName == "less"} {
+                    # Starting a template
                     set ignore 1
                     break
                 } else {

@@ -11,6 +11,12 @@ foreach f [getSourceFileNames] {
             report $f $line "keyword '${keyword}' not immediately followed by a semicolon or a single space"
         } else {
             set first [lindex [lindex $followingTokens 0] 0]
+            if {($keyword == "delete") & ($first  == "\[")} {
+                set first [lindex [lindex $followingTokens 1] 0]
+                if {$first == "]"} {
+                    set first [lindex [lindex $followingTokens 2] 0]
+                }
+            }
             if {$first != ";" && $first != " "} {
                 if {!([llength $followingTokens] >= 2 && $keyword == "throw" && $first == "(" && [lindex [lindex $followingTokens 1] 0] == ")")} {
                     report $f $line "keyword '${keyword}' not immediately followed by a semicolon or a single space"

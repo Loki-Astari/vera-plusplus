@@ -65,26 +65,37 @@ foreach fileName [getSourceFileNames] {
         set state "start"
         foreach token [getTokens $fileName 1 0 -1 -1 {using namespace identifier colon_colon semicolon}] {
             set type [lindex $token 3]
+            set lineNumber [lindex $token 1]
             set value [lindex $token 0]
 
+            #puts "Got: $value"
             if {$state == "start" && $type == "using"} {
                 set mark $token
                 set namespace {}
                 set state "using"
+                #puts "Start -> using  ($value)"
             } elseif {$state == "using" && $type == "namespace"} {
                 set state "namespace"
+                #puts "using -> namespace  ($value)"
+            } elseif {$state == "using"} {
+                set state "start"
             } elseif {$state == "namespace" && $type == "identifier"} {
                 set state "identifier"
                 lappend namespace $value
+                #puts "namespace -> identifier  ($value)"
             } elseif {$state == "identifier" && $type == "colon_colon"} {
                 set state "colon_colon"
+                #puts "identifier -> colon_colon  ($value)"
             } elseif {$state == "colon_colon" && $type == "identifier"} {
                 set state "identifier"
                 lappend namespace $value
+                #puts "colon_colon -> identifier  ($value)"
             } elseif {$state == "identifier" && $type == "semicolon"} {
                 validateUsing $fileName $token $namespace $definedNamespaces
                 set state "start"
+                #puts "identifier -> start  ($value)"
             } else {
+                #report $fileName $lineNumber "Vera Error"
             }
         }
     }

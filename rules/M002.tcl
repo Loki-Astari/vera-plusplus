@@ -35,7 +35,7 @@ foreach f [getSourceFileNames] {
             #ignore space
         } else {
             if {$state == "start" && $tokenName == "namespace"} {
-                set state "CheckIdnetifier"
+                set state "CheckIdnetifierNameSpace"
             } elseif {$state == "start" && $tokenName == "class"} {
                 set state "CheckIdnetifier"
             } elseif {$state == "start" && $tokenName == "struct"} {
@@ -58,6 +58,14 @@ foreach f [getSourceFileNames] {
                 # ignore
             } elseif {$state == "enumOpen" && $tokenName == "rightbrace"} {
                 set state "start"
+            } elseif {$state == "CheckIdnetifierNameSpace" && $tokenName == "identifier"} {
+                set state "CheckIdnetifierNameSpaceTwo"
+                set savedIdentifier [lindex $t 0]
+            } elseif {$state == "CheckIdnetifierNameSpaceTwo"} {
+                if {$tokenName != "assign"} {
+                    set checkTypeName 2
+                }
+                set state "start"
             } elseif {$state == "CheckIdnetifier" && $tokenName == "identifier"} {
                 set checkTypeName 1
                 set state "start"
@@ -66,7 +74,13 @@ foreach f [getSourceFileNames] {
             }
         }
         if {$checkTypeName} {
-            set identifier [lindex $t 0]
+
+            if {$checkTypeName == 2} {
+                set identifier $savedIdentifier
+            } else {
+                set identifier [lindex $t 0]
+            }
+
             set firstLetter [string index $identifier 0]
             if {[expr ! [string is upper $firstLetter]]} {
                 set lineNumber [lindex $t 1]
