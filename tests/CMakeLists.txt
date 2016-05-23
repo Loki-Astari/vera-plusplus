@@ -397,8 +397,9 @@ ${CMAKE_CURRENT_SOURCE_DIR}/L004.cpp:2: L004: line is longer than 100 characters
 
 vera_add_test(Exclusions
   "" "${CMAKE_CURRENT_SOURCE_DIR}/T003.cpp:1: keyword 'case' not followed by a single space
-${CMAKE_CURRENT_SOURCE_DIR}/T003.cpp:5: keyword 'explicit' not followed by a single space
-${CMAKE_CURRENT_SOURCE_DIR}/T003.cpp:9: keyword 'struct' not followed by a single space\n" "" 0
+${CMAKE_CURRENT_SOURCE_DIR}/T003.cpp:4: keyword 'explicit' not followed by a single space
+${CMAKE_CURRENT_SOURCE_DIR}/T003.cpp:8: keyword 'struct' not followed by a single space
+${CMAKE_CURRENT_SOURCE_DIR}/T003.cpp:9: keyword 'union' not followed by a single space\n" "" 0
   --root "${CMAKE_SOURCE_DIR}"
   --rule T003
   --parameter max-directory-depth=20
@@ -476,26 +477,24 @@ vera_add_rule_test(T002 "${output}")
 
 vera_add_rule_test(T003 "1: keyword 'case' not followed by a single space
 2: keyword 'class' not followed by a single space
-3: keyword 'delete' not followed by a single space
-4: keyword 'enum' not followed by a single space
-5: keyword 'explicit' not followed by a single space
-6: keyword 'extern' not followed by a single space
-7: keyword 'goto' not followed by a single space
-8: keyword 'new' not followed by a single space
-9: keyword 'struct' not followed by a single space
-10: keyword 'union' not followed by a single space
-11: keyword 'using' not followed by a single space
-13: keyword 'case' not followed by a single space
-14: keyword 'class' not followed by a single space
-15: keyword 'delete' not followed by a single space
-16: keyword 'enum' not followed by a single space
-17: keyword 'explicit' not followed by a single space
-18: keyword 'extern' not followed by a single space
-19: keyword 'goto' not followed by a single space
-20: keyword 'new' not followed by a single space
-21: keyword 'struct' not followed by a single space
-22: keyword 'union' not followed by a single space
-23: keyword 'using' not followed by a single space")
+3: keyword 'enum' not followed by a single space
+4: keyword 'explicit' not followed by a single space
+5: keyword 'extern' not followed by a single space
+6: keyword 'goto' not followed by a single space
+7: keyword 'new' not followed by a single space
+8: keyword 'struct' not followed by a single space
+9: keyword 'union' not followed by a single space
+10: keyword 'using' not followed by a single space
+12: keyword 'case' not followed by a single space
+13: keyword 'class' not followed by a single space
+14: keyword 'enum' not followed by a single space
+15: keyword 'explicit' not followed by a single space
+16: keyword 'extern' not followed by a single space
+17: keyword 'goto' not followed by a single space
+18: keyword 'new' not followed by a single space
+19: keyword 'struct' not followed by a single space
+20: keyword 'union' not followed by a single space
+21: keyword 'using' not followed by a single space")
 
 vera_add_rule_test(T004 "25: colon not immediately after the 'public' keyword
 28: colon not immediately after the 'protected' keyword
@@ -595,6 +594,7 @@ vera_add_test(RuleDUMP
 2/1\tnewline\t
 
 3/0\tcppcomment\t// some stuff here
+3/18\tnewline\t
 
 4/0\tmsext_stdcall\t__stdcall
 4/9\tnewline\t
@@ -631,8 +631,7 @@ vera_add_test(ErrorReport
 )
 
 vera_add_test(InvalidToken
-  "" "${CMAKE_CURRENT_SOURCE_DIR}/invalidToken.cpp:2: L001: trailing whitespace
-${CMAKE_CURRENT_SOURCE_DIR}/invalidToken.cpp:3: vera++ internal: illegal token in column 12, giving up (hint: fix the file or remove it from the working set)\n"
+  "" "${CMAKE_CURRENT_SOURCE_DIR}/invalidToken.cpp:2: L001: trailing whitespace\n"
   "" 0
   --rule L001 --show-rule
   --root "${CMAKE_SOURCE_DIR}"

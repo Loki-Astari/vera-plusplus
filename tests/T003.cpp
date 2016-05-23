@@ -1,6 +1,5 @@
 case();
 class();
-delete();
 enum();
 explicit();
 extern();
@@ -12,7 +11,6 @@ using();
 // a space followed by a new line
 case 
 class 
-delete 
 enum 
 explicit 
 extern 
@@ -24,7 +22,6 @@ using
 // normal cases
 case Foo:
 class Foo;
-delete foo;
 enum Foo;
 explicit foo;
 extern foo;

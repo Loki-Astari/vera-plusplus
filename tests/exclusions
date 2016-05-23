@@ -1,5 +1,5 @@
 # exclude a few keywords
-/T003.cpp:\d+: T003: keyword '(class|delete|enum|extern|goto|new)' not followed by a single space
+/T003.cpp:\d+: T003: keyword '(class|enum|extern|goto|new)' not followed by a single space
 
 # an empty line, just to make sure this is possible
 
