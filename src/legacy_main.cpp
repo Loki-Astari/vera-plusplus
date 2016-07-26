@@ -22,6 +22,13 @@
 #include <sys/stat.h>
 #include "get_vera_root_default.h"
 
+/*
+ * TODO: put this global though the correct path
+ */
+namespace Vera
+{
+bool gTransformPass = false;
+}
 namespace // unnamed
 {
 
@@ -262,6 +269,7 @@ int legacy_main(int argc, char * argv[], bool silent = false)
                 if (argv[i] != NULL)
                 {
                     singleTransformation = argv[i];
+                    Vera::gTransformPass = true;
                 }
                 else
                 {

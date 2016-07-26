@@ -33,6 +33,11 @@
 #pragma warning(disable:4800)
 #endif
 
+namespace Vera
+{
+extern bool gTransformPass;
+}
+
 template<typename Files, typename Options, typename Reporter>
 void doReports(Files & reports, Options & vm, Reporter * reporter)
 {
@@ -205,6 +210,10 @@ int boost_main(int argc, char * argv[])
         // we need the root to be able to find the profiles
         Vera::Plugins::RootDirectory::setRootDirectory(veraRoot);
 
+        if (vm.count("transform"))
+        {
+            Vera::gTransformPass = true;
+        }
         if (vm.count("profile") != 0 || (vm.count("rule") == 0 && vm.count("transform") == 0))
         {
             try

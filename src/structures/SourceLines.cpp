@@ -29,6 +29,8 @@ SourceFileCollection sources_;
 
 namespace Vera
 {
+extern bool gTransformPass;
+
 namespace Structures
 {
 
@@ -84,13 +86,16 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
 
     while (getline(file, line))
     {
+        bool pragmaLine = false;
         if (line.compare(0, 19, "#pragma vera_pushon") == 0)
         {
             filterState.push_back(1);
+            pragmaLine = true;
         }
         if (line.compare(0, 20, "#pragma vera_pushoff") == 0)
         {
             filterState.push_back(0);
+            pragmaLine = true;
         }
         if (line.compare(0, 20, "#pragma vera_pop") == 0)
         {
@@ -100,8 +105,9 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
                     "Unbalanced vera-pop pragma: ie too many pop pragmas");
             }
             filterState.pop_back();
+            pragmaLine = true;
         }
-        if (not filterState.back())
+        if (not filterState.back() && not pragmaLine && not gTransformPass)
         {
             // If pragmas have turned off vera
             // Then make the line empty. This will just generate the end of line token
