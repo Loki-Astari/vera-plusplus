@@ -111,7 +111,7 @@ void SourceLines::loadFile(std::istream & file, const SourceFiles::FileName & na
         lines.push_back(line);
         fullSource += line;
         fullSource += '\n';
-        lastLineHasNewLine  = !file.eof();
+        lastLineHasNewLine  = not file.eof();
     }
     if (filterState.size() != 1)
     {
