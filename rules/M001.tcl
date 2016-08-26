@@ -74,7 +74,6 @@ set builtInTypes {
     char
     float
     double
-    const
     and
     star
 }
@@ -82,6 +81,17 @@ set builtInTypes {
 proc isBuiltInType {s} {
     global builtInTypes
     return [expr [lsearch $builtInTypes $s] != -1]
+}
+
+set builtInTypeModifier {
+    const
+    constexpr
+    inline
+}
+
+proc isBuiltInTypeModifier {s} {
+    global builtInTypeModifier
+    return [expr [lsearch $builtInTypeModifier $s] != -1]
 }
 
 proc lpop listVar {
@@ -104,6 +114,7 @@ foreach f [getSourceFileNames] {
             set state "start"
         }
 
+        # puts "Line: $lineNumber"
         if {$tokenName == "pp_if" || $tokenName == "pp_error" || $tokenName == "pp_define"} {
             set pp_line $lineNumber
             #puts "$identifier: => PP Start"
@@ -161,12 +172,15 @@ foreach f [getSourceFileNames] {
         } elseif {$state == "Template<" && $tokenName == "greater"} {
             set state "start"
             #puts "$tokenName -> $identifier: => Template Close (start)"
+        } elseif {$state == "start" && [isBuiltInType $identifier]} {
+            set state "Found1"
+            #puts "$tokenName -> $identifier: => start -> Found1  Built in"
+        } elseif {$state == "start" && [isBuiltInTypeModifier $identifier]} {
+            #ignore
+            #puts "$tokenName -> $identifier: => start -> start  isBuiltInTypeModifier "
         } elseif {$state == "start" && $tokenName == "identifier"} {
             set state "Found1"
             #puts "$tokenName -> $identifier: => start -> Found1"
-        } elseif {$state == "start" && [isBuiltInType $tokenName]} {
-            set state "Found1"
-            #puts "$tokenName -> $identifier: => start -> Found1  Built in"
         } elseif {$state == "Found1" && $tokenName == "space"} {
             #ignore
             #puts "$tokenName -> $identifier: => Found1 -> Found1 space"
@@ -175,11 +189,11 @@ foreach f [getSourceFileNames] {
             #puts "$tokenName -> $identifier: => Found1 -> Found1 ::"
         } elseif {$state == "Found1::" && $tokenName == "identifier"} {
             set state "Found1"
-            #puts "$tokenName -> $identifier: => Found1:: -> Found1
+            #puts "$tokenName -> $identifier: => Found1:: -> Found1"
         } elseif {$state == "Found1::" && $tokenName == "space"} {
             #ignore
-            #puts "$tokenName -> $identifier: => Found1:: -> Found1:: space
-        } elseif {$state == "Found1" && [isBuiltInType $tokenName]} {
+            #puts "$tokenName -> $identifier: => Found1:: -> Found1:: space"
+        } elseif {$state == "Found1" && [isBuiltInType $identifier]} {
             #ignore 
             #puts "$tokenName -> $identifier: => Found1 -> Found1 Built in"
         } elseif {$state == "Found1" && $tokenName == "less"} {
@@ -221,6 +235,8 @@ foreach f [getSourceFileNames] {
             # puts "Checking $identifier"
             if {[lsearch -exact $classState $identifier] > 0} {
                 # puts "Constructor Destructor"
+            } elseif {$ignore == 0 && [string equal [string toupper $identifier] $identifier] } {
+                # ignore all uppercase identifiers
             } elseif {$ignore == 0 && [expr ! [string is lower $identifierFirst]]} {
                 # puts "Failed $identifier"
                 report $f $lineNumber "Objects >$identifier< (variables/functions) should have an initial lower case letter"
