@@ -73,6 +73,7 @@ set builtInTypes {
     char
     float
     double
+    static
     const
     and
     star
@@ -81,6 +82,16 @@ set builtInTypes {
 proc isBuiltInType {s} {
     global builtInTypes
     return [expr [lsearch $builtInTypes $s] != -1]
+}
+
+set staticConst {
+    static
+    const
+}
+
+proc isStaticConst {s} {
+    global staticConst
+    return [expr [lsearch $staticConst $s] != -1]
 }
 
 set state "start"
@@ -123,6 +134,8 @@ foreach f [getSourceFileNames] {
         } elseif {$state == "start" && $tokenName == "identifier"} {
             set state "Found1"
             #puts "$tokenName -> $identifier: => start -> Found1"
+        } elseif {$state == "start" && [isStaticConst $tokenName]} {
+            # ignore
         } elseif {$state == "start" && [isBuiltInType $tokenName]} {
             set state "Found1"
             #puts "$tokenName -> $identifier: => start -> Found1  Built in"
@@ -172,9 +185,14 @@ foreach f [getSourceFileNames] {
                 }
             }
             set identifier [lindex $t 0]
-            set identifierFirst [string index $identifier 0]
-            if {$ignore == 0 && [expr ! [string is lower $identifierFirst]]} {
-                report $f $lineNumber "Objects >$identifier< (variables/functions) should have an initial lower case letter"
+            set upper [string toupper $identifier]
+            if {$upper == $identifier} {
+                # Ignore as this is a macro variable.
+            } else {
+                set identifierFirst [string index $identifier 0]
+                if {$ignore == 0 && [expr ! [string is lower $identifierFirst]]} {
+                    report $f $lineNumber "Objects >$identifier< (variables/functions) should have an initial lower case letter"
+                }
             }
         } else {
             #puts "$tokenName -> $identifier: => Reset to start"
