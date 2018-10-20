@@ -131,6 +131,9 @@ foreach f [getSourceFileNames] {
         } elseif {$state == "Template<" && $tokenName == "greater"} {
             set state "start"
             #puts "$tokenName -> $identifier: => Template Close (start)"
+        } elseif {$state == "start" && $tokenName == "identifier" && $identifier == "constexpr"} {
+            #ignore
+            #puts "$tokenName -> $identifier: => start -> start"
         } elseif {$state == "start" && $tokenName == "identifier"} {
             set state "Found1"
             #puts "$tokenName -> $identifier: => start -> Found1"
@@ -147,10 +150,10 @@ foreach f [getSourceFileNames] {
             #puts "$tokenName -> $identifier: => Found1 -> Found1 ::"
         } elseif {$state == "Found1::" && $tokenName == "identifier"} {
             set state "Found1"
-            #puts "$tokenName -> $identifier: => Found1:: -> Found1
+            #puts "$tokenName -> $identifier: => Found1:: -> Found1"
         } elseif {$state == "Found1::" && $tokenName == "space"} {
             #ignore
-            #puts "$tokenName -> $identifier: => Found1:: -> Found1:: space
+            #puts "$tokenName -> $identifier: => Found1:: -> Found1:: space"
         } elseif {$state == "Found1" && [isBuiltInType $tokenName]} {
             #ignore 
             #puts "$tokenName -> $identifier: => Found1 -> Found1 Built in"
