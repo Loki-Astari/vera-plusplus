@@ -27,6 +27,7 @@ set rules {
   M001
   M002
   M003
+  Y001
 }
 
 set parameter {
