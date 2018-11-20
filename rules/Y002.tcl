@@ -16,10 +16,12 @@ foreach f [getSourceFileNames] {
         } elseif {$state == "function-comment"} {
             if [regexp {\}} $line] {
                 set state "start"
-            } elseif [regexp {^inline$} $line] {
+            } elseif [regexp {^typename std::enable_if<.*>::type$} $line] {
                 # OK usage of inline
-            } elseif [regexp {inline} $line] {
-                report $f 1  "To use documentation. After a @function 'inline' must be on its own line"
+            } elseif [regexp {^std::enable_if_t<.*>$} $line] {
+                # OK usage of inline
+            } elseif [regexp {std::enable_if} $line] {
+                report $f 1  "To use documentation. After a @function 'std::enable_if' must be on its own line"
             }
         }
     }
