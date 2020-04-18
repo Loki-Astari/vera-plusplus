@@ -15,7 +15,7 @@ proc getDefinedNamespaces {fileName} {
     set  depth 0
     set  depthHistory {}
     set  state "start"
-    foreach token [getTokens $headerFile 1 0 -1 -1 {namespace identifier leftbrace rightbrace assign semicolon}] {
+    foreach token [getTokens $headerFile 1 0 -1 -1 {namespace identifier colon_colon leftbrace rightbrace assign semicolon}] {
         set tokenName [lindex $token 3]
         set tokenValue [lindex $token 0]
         if {$state == "start" && $tokenName == "namespace"} {
@@ -25,6 +25,11 @@ proc getDefinedNamespaces {fileName} {
             set saveNamespaceName $tokenValue
         } elseif {$state == "namespace-identifier" && $tokenName == "assign"} {
             set state "namespace-assign"
+        } elseif {$state == "namespace-identifier" && $tokenName == "colon_colon"} {
+            set state "namespace-colon-colon"
+        } elseif {$state == "namespace-colon-colon" && $tokenName == "identifier"} {
+            append saveNamespaceName "::$tokenValue"
+            set state "namespace-identifier"
         } elseif {$state == "namespace-assign" && $tokenName != "semicolon"} {
             # ignore
         } elseif {$state == "namespace-assign" && $tokenName == "semicolon"} {
@@ -47,7 +52,11 @@ proc getDefinedNamespaces {fileName} {
             }
         }
     }
-    return $namespaceList;
+    set result []
+    foreach loop $namespaceList {
+        lappend result [join $loop ::]
+    }
+    return $result;
 }
 
 proc validateUsing {file mark namespace definedNamespaces} {
@@ -82,7 +91,7 @@ foreach fileName [getSourceFileNames] {
                 set state "identifier"
                 lappend namespace $value
             } elseif {$state == "identifier" && $type == "semicolon"} {
-                validateUsing $fileName $token $namespace $definedNamespaces
+                validateUsing $fileName $token [join $namespace ::] $definedNamespaces
                 set state "start"
             } else {
             }
