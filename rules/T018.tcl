@@ -6,10 +6,17 @@ foreach fileName [getSourceFileNames] {
     if {[lsearch {.h .hh .hpp .hxx .ipp .tpp} $extension] != -1} {
 
         set state "start"
-        foreach token [getTokens $fileName 1 0 -1 -1 {using namespace identifier}] {
+        set depth 0
+        foreach token [getTokens $fileName 1 0 -1 -1 {using namespace identifier leftbrace rightbrace}] {
             set type [lindex $token 3]
 
-            if {$state == "using" && $type == "namespace"} {
+            if {$type == "leftbrace"} {
+                incr depth
+            }
+            if {$type == "rightbrace"} {
+                incr depth -1
+            }
+            if {$state == "using" && $type == "namespace" && $depth == 0} {
                 report $fileName $usingLine "using namespace not allowed in header file"
             }
 
