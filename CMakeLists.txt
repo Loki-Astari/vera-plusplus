@@ -1,5 +1,6 @@
 project(vera++)
 cmake_minimum_required(VERSION 2.8.6)
+set (CMAKE_CXX_STANDARD 14)
 
 set(VERA_MAJOR 1)
 set(VERA_MINOR 3)
