@@ -133,10 +133,11 @@ void PythonInterpreter::execute(const std::string & fileName)
 {
     try
     {
-        // The old version used for Python2
-        //PyImport_AppendInittab("vera", initvera);
-        // We want to use python 3
+#if PY_VERSION_HEX >= 0x03000000
         PyImport_AppendInittab("vera", PyInit_vera);
+#else
+        PyImport_AppendInittab("vera", initvera);
+#endif
         Py_Initialize();
 
         py::object main_module = py::import("__main__");

@@ -1,5 +1,6 @@
 
 option(VERA_USE_SYSTEM_PYTHON "Build python" ON)
+option(VERA_USE_PYTHON_VERSION_MIN "Build using a specific version of python default 3" 3.0)
 mark_as_advanced(VERA_USE_SYSTEM_PYTHON)
 
 if(VERA_USE_SYSTEM_PYTHON)
@@ -12,8 +13,8 @@ if(VERA_USE_SYSTEM_PYTHON)
   message("Python_LIBRARIES:${Python_LIBRARIES}")
 
 
-  find_package(PythonInterp 3.0)
-  find_package(PythonLibs 3.0)
+  find_package(PythonInterp ${VERA_USE_PYTHON_VERSION_MIN})
+  find_package(PythonLibs ${VERA_USE_PYTHON_VERSION_MIN})
   if(WIN32 AND NOT PYTHONLIBS_FOUND)
     message(FATAL_ERROR "Could NOT find Python. Turn VERA_USE_SYSTEM_PYTHON to OFF to build it with vera++.")
   endif()
