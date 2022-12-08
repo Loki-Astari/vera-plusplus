@@ -26,7 +26,7 @@ proc acceptPairs {} {
         set nextToken [lindex $parens $index]
         set tokenValue [lindex $nextToken 0]
 
-        if {$tokenValue == "if" || $tokenValue == "else" || $tokenValue == "for" || $tokenValue == "while" || $tokenValue == "do"} {
+        while {$tokenValue == "if" || $tokenValue == "else" || $tokenValue == "for" || $tokenValue == "while" || $tokenValue == "do"} {
             incr index
             set paramToken [lindex $parens $index]
 
