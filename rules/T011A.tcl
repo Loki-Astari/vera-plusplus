@@ -25,6 +25,7 @@ proc acceptPairs {} {
     while {$index != $end} {
         set nextToken [lindex $parens $index]
         set tokenValue [lindex $nextToken 0]
+        set maxBlockSize 1000000
 
         while {$tokenValue == "if" || $tokenValue == "else" || $tokenValue == "for" || $tokenValue == "while" || $tokenValue == "do"} {
             incr index
@@ -33,7 +34,9 @@ proc acceptPairs {} {
             set lineOfAction [lindex $nextToken 1]
             set lineOfBrace  [lindex $paramToken 1]
 
-            if {$lineOfAction != $lineOfBrace} {
+            if {$lineOfAction == $lineOfBrace} {
+                set maxBlockSize 2
+            } else {
                 set nextToken $paramToken
             }
             set tokenValue [lindex $paramToken 0]
@@ -63,6 +66,12 @@ proc acceptPairs {} {
                 set rightLine [getLine $file $rightParenLine]
                 if {[string index $leftLine end] != "\\" && [string index $rightLine end] != "\\"} {
                     report $file $rightParenLine "closing curly bracket not in the same line or column"
+                }
+            } else {
+                set blockSize [expr $rightParenLine - $leftParenLine]
+                if {$blockSize > $maxBlockSize} {
+                    puts "$blockSize  > $maxBlockSize"
+                    report $file $rightParenLine "Sub Block to large for unbalanced braces"
                 }
             }
         } else {
