@@ -28,18 +28,19 @@ proc acceptPairs {} {
         set maxBlockSize 1000000
 
         while {$tokenValue == "if" || $tokenValue == "else" || $tokenValue == "for" || $tokenValue == "while" || $tokenValue == "do"} {
-            incr index
-            set paramToken [lindex $parens $index]
 
             set lineOfAction [lindex $nextToken 1]
+
+            incr index
+            set paramToken [lindex $parens $index]
+            set tokenValue [lindex $paramToken 0]
             set lineOfBrace  [lindex $paramToken 1]
 
-            if {$lineOfAction == $lineOfBrace} {
+            if {$tokenValue == "\{" && $lineOfAction == $lineOfBrace} {
                 set maxBlockSize 2
             } else {
                 set nextToken $paramToken
             }
-            set tokenValue [lindex $paramToken 0]
         }
 
         if {$tokenValue == "\{"} {
