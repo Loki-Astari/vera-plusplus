@@ -94,6 +94,16 @@ proc isStaticConst {s} {
     return [expr [lsearch $staticConst $s] != -1]
 }
 
+set conceptConst {
+    concept
+    requires
+}
+
+proc isConcept {s} {
+    global conceptConst
+    return [expr [lsearch $conceptConst $s] != -1]
+}
+
 set state "start"
 set pp_line -1
 
@@ -108,13 +118,13 @@ foreach f [getSourceFileNames] {
 
         if {$tokenName == "pp_if" || $tokenName == "pp_error" || $tokenName == "pp_define"} {
             set pp_line $lineNumber
-            #puts "$identifier: => PP Start"
+            # puts "$identifier: => PP Start"
         } elseif {$lineNumber == $pp_line} {
             # Ignore PP line tokens
-            #puts "$tokenName -> $identifier: => PP Cont"
+            # puts "$tokenName -> $identifier: => PP Cont"
         } elseif {$state == "start" && $tokenName == "typedef"} {
             set state "Typedef"
-            #puts "$tokenName -> $identifier: => Typedef Start"
+            # puts "$tokenName -> $identifier: => Typedef Start"
         } elseif {$state == "Typedef"} {
             if {$tokenName == "semicolon"} {
                 set state "start"
@@ -124,50 +134,54 @@ foreach f [getSourceFileNames] {
             }
         } elseif {$state == "start" && $tokenName == "template"} {
             set state "Template"
-            #puts "$tokenName -> $identifier: => Template Start"
+            # puts "$tokenName -> $identifier: => Template Start"
         } elseif {$state == "Template" && $tokenName == "less"} {
             set state "Template<"
-            #puts "$tokenName -> $identifier: => Template Open"
+            # puts "$tokenName -> $identifier: => Template Open"
         } elseif {$state == "Template<" && $tokenName == "greater"} {
             set state "start"
-            #puts "$tokenName -> $identifier: => Template Close (start)"
+            # puts "$tokenName -> $identifier: => Template Close (start)"
         } elseif {$state == "start" && $tokenName == "identifier" && $identifier == "constexpr"} {
             #ignore
-            #puts "$tokenName -> $identifier: => start -> start"
+            # puts "$tokenName -> $identifier: => start -> start"
+        } elseif {$state == "start" && [isConcept $identifier]} {
+            #ignore
+            # puts "$tokenName -> $identifier: => start -> isConcept"
         } elseif {$state == "start" && $tokenName == "identifier"} {
             set state "Found1"
-            #puts "$tokenName -> $identifier: => start -> Found1"
+            # puts "$tokenName -> $identifier: => start -> Found1"
         } elseif {$state == "start" && [isStaticConst $tokenName]} {
             # ignore
+            # puts "$tokenName -> $identifier: => start -> isStaticConst"
         } elseif {$state == "start" && [isBuiltInType $tokenName]} {
             set state "Found1"
-            #puts "$tokenName -> $identifier: => start -> Found1  Built in"
+            # puts "$tokenName -> $identifier: => start -> Found1  Built in"
         } elseif {$state == "Found1" && $tokenName == "space"} {
             #ignore
-            #puts "$tokenName -> $identifier: => Found1 -> Found1 space"
+            # puts "$tokenName -> $identifier: => Found1 -> Found1 space"
         } elseif {$state == "Found1" && $tokenName == "colon_colon"} {
             set state "Found1::"
-            #puts "$tokenName -> $identifier: => Found1 -> Found1 ::"
+            # puts "$tokenName -> $identifier: => Found1 -> Found1 ::"
         } elseif {$state == "Found1::" && $tokenName == "identifier"} {
             set state "Found1"
-            #puts "$tokenName -> $identifier: => Found1:: -> Found1"
+            # puts "$tokenName -> $identifier: => Found1:: -> Found1"
         } elseif {$state == "Found1::" && $tokenName == "space"} {
             #ignore
-            #puts "$tokenName -> $identifier: => Found1:: -> Found1:: space"
+            # puts "$tokenName -> $identifier: => Found1:: -> Found1:: space"
         } elseif {$state == "Found1" && [isBuiltInType $tokenName]} {
             #ignore 
-            #puts "$tokenName -> $identifier: => Found1 -> Found1 Built in"
+            # puts "$tokenName -> $identifier: => Found1 -> Found1 Built in"
         } elseif {$state == "Found1" && $tokenName == "less"} {
             set state "Found1<"
-            #puts "$tokenName -> $identifier: => Found1 -> Found1< Template Param"
+            # puts "$tokenName -> $identifier: => Found1 -> Found1< Template Param"
         } elseif {$state == "Found1<" && $tokenName != "great"} {
             #ignore
-            #puts "$tokenName -> $identifier: => Found1 -> Found1< Template Param Cont"
+            # puts "$tokenName -> $identifier: => Found1 -> Found1< Template Param Cont"
         } elseif {$state == "Found1<" && $tokenName == "great"} {
             set state "Found1"
-            #puts "$tokenName -> $identifier: => Found1< -> Found1"
+            # puts "$tokenName -> $identifier: => Found1< -> Found1"
         } elseif {$state == "Found1" && $tokenName == "identifier"} {
-            #puts "$tokenName -> $identifier: => Found2 -> HIT Checking"
+            # puts "$tokenName -> $identifier: => Found2 -> HIT Checking"
             set state "start"
             # Hit
             set objectName [lindex $t 0]
@@ -193,12 +207,12 @@ foreach f [getSourceFileNames] {
                 # Ignore as this is a macro variable.
             } else {
                 set identifierFirst [string index $identifier 0]
-                if {$ignore == 0 && [expr ! [string is lower $identifierFirst]]} {
+                if {$ignore == 0 && $identifierFirst != "$" && [expr ! [string is lower $identifierFirst]]} {
                     report $f $lineNumber "Objects >$identifier< (variables/functions) should have an initial lower case letter"
                 }
             }
         } else {
-            #puts "$tokenName -> $identifier: => Reset to start"
+            # puts "$tokenName -> $identifier: => Reset to start"
             set state "start"
         }
     }
