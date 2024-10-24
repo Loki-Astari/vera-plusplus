@@ -72,7 +72,7 @@ foreach fileName [getSourceFileNames] {
     if {[lsearch {.cpp .cc} $extension] != -1} {
         set definedNamespaces [getDefinedNamespaces $fileName]
         set state "start"
-        foreach token [getTokens $fileName 1 0 -1 -1 {using namespace identifier colon_colon semicolon}] {
+        foreach token [getTokens $fileName 1 0 -1 -1 {using namespace identifier colon_colon semicolon leftbrace rightbrace}] {
             set type [lindex $token 3]
             set value [lindex $token 0]
 
@@ -93,6 +93,10 @@ foreach fileName [getSourceFileNames] {
             } elseif {$state == "identifier" && $type == "semicolon"} {
                 validateUsing $fileName $token [join $namespace ::] $definedNamespaces
                 set state "start"
+                set namespace {}
+            } elseif {$state == "identifier" && $type == "leftbrace"} {
+                set state "start"
+                set namespace {}
             } else {
             }
         }
