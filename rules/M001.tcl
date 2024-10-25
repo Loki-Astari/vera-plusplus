@@ -206,9 +206,11 @@ foreach f [getSourceFileNames] {
             if {$upper == $identifier} {
                 # Ignore as this is a macro variable.
             } else {
-                set identifierFirst [string index $identifier 0]
-                if {$ignore == 0 && $identifierFirst != "$" && [expr ! [string is lower $identifierFirst]]} {
-                    report $f $lineNumber "Objects >$identifier< (variables/functions) should have an initial lower case letter"
+                if {$identifier != "_id"} {
+                    set identifierFirst [string index $identifier 0]
+                    if {$ignore == 0 && $identifierFirst != "$" && [expr ! [string is lower $identifierFirst]]} {
+                        report $f $lineNumber "Objects >$identifier< (variables/functions) should have an initial lower case letter"
+                    }
                 }
             }
         } else {
