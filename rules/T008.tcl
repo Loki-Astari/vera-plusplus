@@ -18,7 +18,7 @@ foreach f [getSourceFileNames] {
                 if {[list [lindex [lindex $followingTokens 0] 0] [lindex [lindex $followingTokens 1] 0]] != [list " " "("]} {
                     if {$keyword == "if"} {
                         if {[list [lindex [lindex $followingTokens 0] 0] [lindex [lindex $followingTokens 1] 0] [lindex [lindex $followingTokens 2] 0] [lindex [lindex $followingTokens 3] 0]  ] != [list " " "constexpr" " " "("]} {
-                            report $f $line "keyword '${keyword}' not followed by a single space. >if constexpr (< => <if><space><constepxr><space>(
+                            report $f $line "keyword '${keyword}' not followed by a single space. >if constexpr (< => <if><space><constepxr><space>("
                         }
                     } else {
                         report $f $line "keyword '${keyword}' not followed by a single space"
