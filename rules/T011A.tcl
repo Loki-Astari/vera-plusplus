@@ -30,14 +30,23 @@ proc acceptPairs {} {
         while {$tokenValue == "if" || $tokenValue == "else" || $tokenValue == "for" || $tokenValue == "while" || $tokenValue == "do"} {
 
             set lineOfAction [lindex $nextToken 1]
+            set oldToken $nextToken
+            set oldTokenValue $tokenValue
 
             incr index
             set paramToken [lindex $parens $index]
             set tokenValue [lindex $paramToken 0]
             set lineOfBrace  [lindex $paramToken 1]
 
+            # If else is followed by if then ignore the if and lign up tokens with the else
+            if {$oldTokenValue == "else" && $tokenValue == "if"} {
+                incr index
+                set skipToken [lindex $parens $index]
+                set tokenValue [lindex $skipToken 0] 
+            }
+
             if {$tokenValue == "\{" && $lineOfAction == $lineOfBrace} {
-                set maxBlockSize 2
+                set maxBlockSize 100
             } else {
                 set nextToken $paramToken
             }
@@ -66,7 +75,8 @@ proc acceptPairs {} {
                 set leftLine [getLine $file $leftParenLine]
                 set rightLine [getLine $file $rightParenLine]
                 if {[string index $leftLine end] != "\\" && [string index $rightLine end] != "\\"} {
-                    report $file $rightParenLine "closing curly bracket not in the same line or column"
+                    set message [concat "closing curly bracket not in the same line or column " $leftParenColumn " != " $rightParenColumn " !"]
+                    report $file $rightParenLine $message
                 }
             } else {
                 set blockSize [expr $rightParenLine - $leftParenLine]
