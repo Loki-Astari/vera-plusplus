@@ -19,10 +19,41 @@
 #               // Stuff
 #           }
 
+proc ignoreBrace {} {
+    global file parens index end
+
+    if {$index != $end} {
+        set nextToken [lindex $parens $index]
+        set tokenValue [lindex $nextToken 0]
+
+        while {$tokenValue == "("} {
+            set openCount 1
+            while {$openCount != 0 && $index != $end} {
+                incr index
+                set nextToken [lindex $parens $index]
+                set tokenValue [lindex $nextToken 0]
+                if {$tokenValue == "("} {
+                    incr openCount
+                }
+                if {$tokenValue == ")"} {
+                    incr openCount -1
+                }
+            }
+            incr index
+            set nextToken [lindex $parens $index]
+            set tokenValue [lindex $nextToken 0]
+        }
+    }
+    return
+}
+
 proc acceptPairs {} {
     global file parens index end
 
     while {$index != $end} {
+
+        ignoreBrace
+
         set nextToken [lindex $parens $index]
         set tokenValue [lindex $nextToken 0]
         set maxBlockSize 1000000
@@ -34,6 +65,8 @@ proc acceptPairs {} {
             set oldTokenValue $tokenValue
 
             incr index
+            ignoreBrace
+
             set paramToken [lindex $parens $index]
             set tokenValue [lindex $paramToken 0]
             set lineOfBrace  [lindex $paramToken 1]
@@ -41,6 +74,8 @@ proc acceptPairs {} {
             # If else is followed by if then ignore the if and lign up tokens with the else
             if {$oldTokenValue == "else" && $tokenValue == "if"} {
                 incr index
+                ignoreBrace
+
                 set skipToken [lindex $parens $index]
                 set tokenValue [lindex $skipToken 0] 
             }
@@ -54,6 +89,8 @@ proc acceptPairs {} {
 
         if {$tokenValue == "\{"} {
             incr index
+            ignoreBrace
+
             set leftParenLine [lindex $nextToken 1]
             set leftParenColumn [lindex $nextToken 2]
 
@@ -66,6 +103,8 @@ proc acceptPairs {} {
 
             set nextToken [lindex $parens $index]
             incr index
+            ignoreBrace
+
             set tokenValue [lindex $nextToken 0]
             set rightParenLine [lindex $nextToken 1]
             set rightParenColumn [lindex $nextToken 2]
@@ -93,7 +132,7 @@ proc acceptPairs {} {
 
 foreach file [getSourceFileNames] {
     # set parens [getTokens $file 1 0 -1 -1 {leftbrace rightbrace}]
-    set parens [getTokens $file 1 0 -1 -1 {for if while do else leftbrace rightbrace}]
+    set parens [getTokens $file 1 0 -1 -1 {for if while do else leftbrace rightbrace leftparen rightparen}]
     set index 0
     set end [llength $parens]
     acceptPairs
