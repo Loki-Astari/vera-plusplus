@@ -59,7 +59,13 @@ proc getDefinedNamespaces {fileName} {
     return $result;
 }
 
-proc validateUsing {file mark namespace definedNamespaces} {
+proc validateUsing {file mark namespacearray definedNamespaces} {
+    if {[llength $namespacearray] > 1 && [lindex $namespacearray 0] == "std"} {
+        return;
+    }
+
+    set namespace [join $namespacearray ::]
+
     set XX [lsearch $definedNamespaces $namespace]
     if {[lsearch $definedNamespaces $namespace] == -1} {
         set lineNumber [lindex $mark 1]
@@ -91,7 +97,7 @@ foreach fileName [getSourceFileNames] {
                 set state "identifier"
                 lappend namespace $value
             } elseif {$state == "identifier" && $type == "semicolon"} {
-                validateUsing $fileName $token [join $namespace ::] $definedNamespaces
+                validateUsing $fileName $token $namespace $definedNamespaces
                 set state "start"
                 set namespace {}
             } elseif {$state == "identifier" && $type == "leftbrace"} {
