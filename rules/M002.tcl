@@ -27,6 +27,7 @@
 
 
 set state "start"
+set checkFollowingEnum 1
 foreach f [getSourceFileNames] {
     foreach t [getTokens $f 1 0 -1 -1 {}] {
         set tokenName [lindex $t 3]
@@ -52,8 +53,10 @@ foreach f [getSourceFileNames] {
                 set checkTypeName 1
             } elseif {$state == "enum" && $tokenName == "leftbrace"} {
                 set state "enumOpen"
+            } elseif {$state == "enumOpen" && $tokenName == "comment"} {
+                set checkFollowingEnum 0
             } elseif {$state == "enumOpen" && $tokenName == "identifier"} {
-                set checkTypeName 1
+                set checkTypeName $checkFollowingEnum
             } elseif {$state == "enumOpen" && $tokenName == "comma"} {
                 # ignore
             } elseif {$state == "enumOpen" && $tokenName == "rightbrace"} {
